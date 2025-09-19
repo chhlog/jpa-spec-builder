@@ -77,7 +77,7 @@ publishing {
             pom {
                 name = 'jpa-spec-builder'
                 description = 'JPA Specification을 위한 유틸리티 라이브러리'
-                url = 'https://gitlab.com/chhyuk/jpa-spec-builder'
+                url = 'https://github.com/chhlog/jpa-spec-builder'
                 
                 licenses {
                     license {
@@ -88,15 +88,15 @@ publishing {
                 
                 developers {
                     developer {
-                        id = 'chhyuk'
-                        name = 'chhyuk'
+                        id = 'chhlog'
+                        name = 'chhlog'
                     }
                 }
                 
                 scm {
-                    connection = 'scm:git:git://gitlab.com/chhyuk/jpa-spec-builder.git'
-                    developerConnection = 'scm:git:ssh://gitlab.com/chhyuk/jpa-spec-builder.git'
-                    url = 'https://gitlab.com/chhyuk/jpa-spec-builder'
+                    connection = 'scm:git:git://github.com/chhlog/jpa-spec-builder.git'
+                    developerConnection = 'scm:git:ssh://github.com/chhlog/jpa-spec-builder.git'
+                    url = 'https://github.com/chhlog/jpa-spec-builder'
                 }
             }
         }
