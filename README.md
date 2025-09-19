@@ -15,6 +15,8 @@ JPA Specification을 위한 유틸리티 라이브러리. Spring Data JPA에서 
 - **타입 변환**: 자동 타입 변환 (LocalDate ↔ ZonedDateTime, 숫자 타입 등)
 - **복잡한 조인**: 다양한 조인 타입과 조건 지원
 - **중첩 조건**: AND/OR 중첩을 통한 복잡한 논리 표현
+- **정렬 및 페이징**: ORDER BY, LIMIT, OFFSET 지원 (v1.2.0+)
+- **쿼리 로깅**: 디버깅을 위한 쿼리 빌드 정보 출력 (v1.2.0+)
 
 ## 사용법
 
@@ -714,6 +716,136 @@ public class WorkspaceInviteService {
             .build();
 
         return repository.findAll(spec);
+    }
+}
+```
+
+## 정렬 및 페이징 (v1.2.0+)
+
+### 1. 기본 정렬
+
+```java
+// 단일 필드 정렬 (문자열)
+Specification<WorkspaceInvite> spec = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .equal("status", Status.ACTIVE)
+    .orderBy("createdAt", "DESC")                    // 생성일 내림차순
+    .build();
+
+// 단일 필드 정렬 (Direction enum)
+Specification<WorkspaceInvite> spec2 = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .equal("status", Status.ACTIVE)
+    .orderBy("createdAt", Direction.DESC)            // 생성일 내림차순
+    .build();
+
+// 다중 필드 정렬
+Specification<WorkspaceInvite> multiSortSpec = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .equal("status", Status.ACTIVE)
+    .orderBy("status", Direction.ASC)                // 상태 오름차순
+    .orderBy("createdAt", Direction.DESC)            // 생성일 내림차순
+    .build();
+
+// 정적 메서드 사용
+Specification<WorkspaceInvite> staticSpec = SpecificationQueryBuilder.orderBy("createdAt", Direction.DESC);
+
+// 생성되는 SQL:
+// SELECT w.* FROM workspace_invite w
+// WHERE w.status = 'ACTIVE'
+// ORDER BY w.status ASC, w.created_at DESC
+```
+
+### 2. 페이징
+
+```java
+// LIMIT/OFFSET 방식
+Specification<WorkspaceInvite> pagedSpec = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .like("name", "김")
+    .orderBy("createdAt", "DESC")
+    .limit(10)                                       // 최대 10개
+    .offset(20)                                      // 20개 건너뛰기
+    .build();
+
+// Spring Data JPA와 연동
+Pageable pageable = PageRequest.of(2, 10, Sort.by("createdAt").descending());
+Page<WorkspaceInvite> result = repository.findAll(pagedSpec, pageable);
+
+// 생성되는 SQL:
+// SELECT w.* FROM workspace_invite w
+// WHERE w.name LIKE '%김%'
+// ORDER BY w.created_at DESC
+// OFFSET 20 ROWS FETCH FIRST 10 ROWS ONLY
+
+// 페이지 기반 페이징
+Specification<WorkspaceInvite> pageSpec = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .equal("status", Status.ACTIVE)
+    .page(0, 5)                                      // 첫 번째 페이지, 5개씩
+    .build();
+```
+
+### 3. 쿼리 로깅
+
+```java
+// 디버깅을 위한 쿼리 로깅
+Specification<WorkspaceInvite> loggedSpec = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .equal("email", "test@example.com")
+    .like("name", "김")
+    .orderBy("createdAt", "DESC")
+    .limit(10)
+    .logQuery()                                      // 쿼리 빌드 정보 로깅
+    .build();
+
+// 로그 출력 예시:
+// INFO  - Building query with 2 conditions, 1 order by clauses, limit: 10, offset: null
+// INFO  - LIMIT/OFFSET conditions set - limit: 10, offset: null. These should be handled by Spring Data JPA Pageable or repository methods.
+```
+
+### 4. 빌더 상태 확인
+
+```java
+// 빌더 상태 확인 메서드들
+SpecificationQueryBuilder.Builder<WorkspaceInvite> builder = SpecificationQueryBuilder.Builder
+    .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+    .equal("status", Status.ACTIVE)
+    .orderBy("createdAt", "DESC")
+    .limit(10)
+    .offset(5);
+
+// 상태 확인
+boolean hasPagination = builder.hasPagination();     // true
+boolean hasOrderBy = builder.hasOrderBy();           // true
+Pageable pageable = builder.toPageable();            // PageRequest.of(0, 10)
+```
+
+### 5. 실무 예시
+
+```java
+@Service
+public class WorkspaceInviteService {
+
+    @Autowired
+    private WorkspaceInviteRepository repository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    public Page<WorkspaceInvite> searchInvites(InviteSearchRequest request) {
+        Specification<WorkspaceInvite> spec = SpecificationQueryBuilder.Builder
+            .<WorkspaceInvite>create(WorkspaceInvite.class, entityManager)
+            .equal("status", request.getStatus())
+            .like("name", request.getName())
+            .dateRangeBetween("createdAt", request.getStartDate(), request.getEndDate(),
+                DateParser.defaultParser())
+            .orderBy("createdAt", "DESC")             // 최신순 정렬
+            .page(request.getPage(), request.getSize()) // 페이징
+            .logQuery()                               // 디버깅용 로깅
+            .build();
+
+        return repository.findAll(spec, PageRequest.of(request.getPage(), request.getSize()));
     }
 }
 ```

@@ -4,9 +4,10 @@
 
 - **테스트 환경**: PostgreSQL 16 (Testcontainers)
 - **테스트 프레임워크**: JUnit 5 + Spring Boot Test
-- **총 테스트 클래스**: 11개
-- **총 테스트 메서드**: 108개
+- **총 테스트 클래스**: 12개
+- **총 테스트 메서드**: 120개
 - **테스트 결과**: ✅ 모든 테스트 통과
+- **최신 업데이트**: v1.2.0 Phase 1 기능 (정렬, 페이징, 로깅) 추가
 
 ## 🧪 테스트 클래스별 결과
 
@@ -354,11 +355,77 @@ return LocalDate.parse(date.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd")).a
 
 **jpa-spec-builder 라이브러리는 모든 기능이 정상적으로 동작하며, 실제 프로덕션 환경에서 안전하게 사용할 수 있습니다.**
 
-- ✅ **기능 완전성**: 모든 라이브러리 기능 검증 완료
-- ✅ **안정성**: 108개 테스트 모두 통과
+- ✅ **기능 완전성**: 모든 라이브러리 기능 검증 완료 (v1.2.0 Phase 1 포함)
+- ✅ **안정성**: 120개 테스트 모두 통과
 - ✅ **신뢰성**: 실제 PostgreSQL 데이터베이스에서 검증
-- ✅ **확장성**: 복잡한 쿼리 및 조인 지원
+- ✅ **확장성**: 복잡한 쿼리, 조인, 정렬, 페이징 지원
 - ✅ **사용성**: 직관적인 API 및 풍부한 문서화
+- ✅ **디버깅**: 쿼리 로깅 기능으로 개발 편의성 향상
+
+### 12. Phase1FeaturesIT (v1.2.0 Phase 1 기능 테스트) 🆕
+
+**테스트 메서드**: 12개
+
+- ✅ `testOrderBySingleField()` - 단일 필드 정렬
+- ✅ `testOrderByMultipleFields()` - 다중 필드 정렬
+- ✅ `testOrderByWithConditions()` - 조건과 함께 정렬
+- ✅ `testOrderByDefaultAscending()` - 기본 ASC 정렬
+- ✅ `testOrderByWithBlankField()` - 빈 필드명 처리
+- ✅ `testLimitAndOffset()` - LIMIT/OFFSET 페이징
+- ✅ `testPageMethod()` - 페이지 기반 페이징
+- ✅ `testQueryLogging()` - 쿼리 로깅
+- ✅ `testComplexQueryWithAllPhase1Features()` - 모든 Phase 1 기능 조합
+- ✅ `testBuilderStateMethods()` - 빌더 상태 확인 메서드
+- ✅ `testInvalidPaginationValues()` - 잘못된 페이징 값 처리
+- ✅ `testOrderByWithNullDirection()` - null 방향 처리
+
+**검증된 기능**:
+
+- **정렬 (ORDER BY)**:
+
+  - 단일/다중 필드 정렬
+  - ASC/DESC 방향 지정
+  - 빈 필드명 자동 무시
+  - null 방향 처리 (기본값 ASC)
+
+- **페이징 (LIMIT/OFFSET)**:
+
+  - `limit(count)` - 결과 수 제한
+  - `offset(count)` - 건너뛸 수
+  - `page(pageNumber, pageSize)` - 페이지 기반 페이징
+  - `toPageable()` - Spring Data JPA Pageable 변환
+  - 잘못된 값 자동 무시
+
+- **쿼리 로깅**:
+
+  - `logQuery()` - 쿼리 빌드 정보 출력
+  - 조건 수, 정렬 수, 페이징 정보 로깅
+  - 디버깅 지원
+
+- **유틸리티 메서드**:
+  - `hasPagination()` - 페이징 설정 여부 확인
+  - `hasOrderBy()` - 정렬 설정 여부 확인
+
+**생성되는 SQL 예시**:
+
+```sql
+-- 정렬 적용
+SELECT w.* FROM workspace_invite w
+WHERE w.status = 'ACTIVE'
+ORDER BY w.status ASC, w.created_at DESC
+
+-- 페이징 적용
+SELECT w.* FROM workspace_invite w
+WHERE w.name LIKE '%김%'
+ORDER BY w.created_at DESC
+OFFSET 20 ROWS FETCH FIRST 10 ROWS ONLY
+```
+
+**Spring Data JPA 연동**:
+
+- `PageRequest.of(page, size, sort)` 자동 생성
+- `Page<T>` 반환 타입 지원
+- `count()` 쿼리 자동 실행
 
 **테스트 완료일**: 2025년 9월 19일  
 **테스트 환경**: macOS 23.2.0, PostgreSQL 16, Spring Boot 3.x, JUnit 5
