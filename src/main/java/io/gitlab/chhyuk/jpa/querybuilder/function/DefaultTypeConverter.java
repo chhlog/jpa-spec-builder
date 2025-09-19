@@ -1,4 +1,4 @@
-package io.gitlab.chhyuk.jpa.querybuilder.funtion;
+package io.gitlab.chhyuk.jpa.querybuilder.function;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

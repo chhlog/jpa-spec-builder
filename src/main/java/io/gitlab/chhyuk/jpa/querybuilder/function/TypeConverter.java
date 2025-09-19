@@ -1,4 +1,4 @@
-package io.gitlab.chhyuk.jpa.querybuilder.funtion;
+package io.gitlab.chhyuk.jpa.querybuilder.function;
 
 /**
  * 타입 변환을 위한 인터페이스.

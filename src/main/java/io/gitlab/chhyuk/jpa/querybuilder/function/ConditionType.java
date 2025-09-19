@@ -1,4 +1,4 @@
-package io.gitlab.chhyuk.jpa.querybuilder.funtion;
+package io.gitlab.chhyuk.jpa.querybuilder.function;
 
 /**
  * 지원되는 조건 타입.

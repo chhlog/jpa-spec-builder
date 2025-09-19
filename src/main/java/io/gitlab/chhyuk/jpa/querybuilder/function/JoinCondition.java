@@ -1,4 +1,4 @@
-package io.gitlab.chhyuk.jpa.querybuilder.funtion;
+package io.gitlab.chhyuk.jpa.querybuilder.function;
 
 import java.util.Collection;
 import org.apache.commons.lang3.StringUtils;

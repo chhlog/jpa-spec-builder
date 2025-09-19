@@ -1,10 +1,10 @@
 package io.gitlab.chhyuk.jpa.querybuilder;
 
-import io.gitlab.chhyuk.jpa.querybuilder.funtion.ConditionType;
-import io.gitlab.chhyuk.jpa.querybuilder.funtion.DateParser;
-import io.gitlab.chhyuk.jpa.querybuilder.funtion.DefaultTypeConverter;
-import io.gitlab.chhyuk.jpa.querybuilder.funtion.JoinCondition;
-import io.gitlab.chhyuk.jpa.querybuilder.funtion.TypeConverter;
+import io.gitlab.chhyuk.jpa.querybuilder.function.ConditionType;
+import io.gitlab.chhyuk.jpa.querybuilder.function.DateParser;
+import io.gitlab.chhyuk.jpa.querybuilder.function.DefaultTypeConverter;
+import io.gitlab.chhyuk.jpa.querybuilder.function.JoinCondition;
+import io.gitlab.chhyuk.jpa.querybuilder.function.TypeConverter;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
