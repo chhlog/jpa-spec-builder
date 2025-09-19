@@ -1,0 +1,104 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'io.gitlab.chhyuk'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+// 컴파일 인코딩
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// Javadoc
+javadoc {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.author = true
+    options.version = true
+    options.addStringOption('Xdoclint:none', '-quiet')
+    failOnError = false
+}
+
+// 재현 가능 빌드(권장): 타임스탬프/파일 정렬 고정
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+// 매니페스트(재현 가능성을 해치지 않게 최소화 권장)
+jar {
+    manifest {
+        attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'chhyuk'
+        )
+    }
+}
+
+repositories { 
+    mavenCentral()
+}
+
+dependencies {
+    api 'org.springframework.data:spring-data-jpa:3.5.4'
+    api 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.2'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// JitPack 배포를 위한 설정
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            
+            pom {
+                name = 'jpa-spec-builder'
+                description = 'JPA Specification을 위한 유틸리티 라이브러리'
+                url = 'https://gitlab.com/chhyuk/jpa-spec-builder'
+                
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id = 'chhyuk'
+                        name = 'chhyuk'
+                    }
+                }
+                
+                scm {
+                    connection = 'scm:git:git://gitlab.com/chhyuk/jpa-spec-builder.git'
+                    developerConnection = 'scm:git:ssh://gitlab.com/chhyuk/jpa-spec-builder.git'
+                    url = 'https://gitlab.com/chhyuk/jpa-spec-builder'
+                }
+            }
+        }
+    }
+}
